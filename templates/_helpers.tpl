@@ -28,6 +28,13 @@ GatewayClass name: gatewayClass.name or the release name.
 {{- end -}}
 
 {{/*
+EnvoyProxy name: envoy.name or the GatewayClass name.
+*/}}
+{{- define "gateway.envoyName" -}}
+{{- default (include "gateway.className" .) .Values.envoy.name -}}
+{{- end -}}
+
+{{/*
 GatewayClass referenced by the Gateway: gateway.className, else the class of this chart.
 */}}
 {{- define "gateway.gatewayClassName" -}}

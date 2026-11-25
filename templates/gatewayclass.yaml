@@ -8,8 +8,14 @@ spec:
   {{- with .Values.gatewayClass.description }}
   description: {{ . | quote }}
   {{- end }}
-  {{- with .Values.gatewayClass.parametersRef }}
+  {{- if .Values.gatewayClass.parametersRef }}
   parametersRef:
-    {{- toYaml . | nindent 4 }}
+    {{- toYaml .Values.gatewayClass.parametersRef | nindent 4 }}
+  {{- else if .Values.envoy.enabled }}
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: {{ include "gateway.envoyName" . }}
+    namespace: {{ .Release.Namespace }}
   {{- end }}
 {{- end }}

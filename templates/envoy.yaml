@@ -1,0 +1,72 @@
+{{- if .Values.envoy.enabled }}
+{{- $e := .Values.envoy }}
+{{- $gateway := include "gateway.gatewayName" . }}
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  {{- include "gateway.metadata" (dict "ctx" $ "name" (include "gateway.envoyName" $) "item" (dict)) | nindent 2 }}
+spec:
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        replicas: {{ $e.replicas }}
+        {{- with $e.resources }}
+        container:
+          resources:
+            {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- if or $e.nodeSelector $e.topologySpreadConstraints }}
+        pod:
+          {{- with $e.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $e.topologySpreadConstraints }}
+          topologySpreadConstraints:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- end }}
+      {{- with $e.pdb }}
+      envoyPDB:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      envoyService:
+        type: {{ $e.service.type }}
+        {{- with $e.service.externalTrafficPolicy }}
+        externalTrafficPolicy: {{ . }}
+        {{- end }}
+        {{- with $e.service.annotations }}
+        annotations:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+{{- if $e.requestTimeout }}
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  {{- include "gateway.metadata" (dict "ctx" $ "name" $gateway "item" (dict)) | nindent 2 }}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: {{ $gateway }}
+  timeout:
+    http:
+      requestTimeout: {{ $e.requestTimeout }}
+{{- end }}
+{{- if $e.allowUnderscoresInHeaders }}
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  {{- include "gateway.metadata" (dict "ctx" $ "name" $gateway "item" (dict)) | nindent 2 }}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: {{ $gateway }}
+  headers:
+    withUnderscoresAction: Allow
+{{- end }}
+{{- end }}

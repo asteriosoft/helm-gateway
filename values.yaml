@@ -56,6 +56,34 @@ httpsRedirect:
   # -- Redirect status code
   statusCode: 308
 
+envoy:
+  # -- Render the Envoy Gateway objects below (EnvoyProxy and the traffic policies) and reference the EnvoyProxy from
+  # the GatewayClass. Needs the Envoy Gateway CRDs
+  enabled: false
+  # -- EnvoyProxy name (defaults to the GatewayClass name)
+  name: ""
+  # -- Replicas of the Envoy (data plane) pods
+  replicas: 1
+  # -- Container resources of the Envoy pods (empty = Envoy Gateway defaults)
+  resources: {}
+  # -- Node selector of the Envoy pods
+  nodeSelector: {}
+  # -- Topology spread constraints of the Envoy pods
+  topologySpreadConstraints: []
+  # -- PodDisruptionBudget of the Envoy pods, for example `{minAvailable: 1}`
+  pdb: {}
+  service:
+    # -- Type of the Service that exposes Envoy
+    type: LoadBalancer
+    # -- `externalTrafficPolicy` of the Service (empty = Kubernetes default)
+    externalTrafficPolicy: ""
+    # -- Service annotations, for example the AWS Load Balancer Controller settings of the NLB
+    annotations: {}
+  # -- Request timeout for every route of the Gateway (BackendTrafficPolicy), for example `60s`. Empty = Envoy default (15s)
+  requestTimeout: ""
+  # -- Accept request headers that contain underscores (ClientTrafficPolicy). Envoy drops them by default
+  allowUnderscoresInHeaders: false
+
 # -- Extra HTTPRoutes of the platform (for example a maintenance page), keyed by name. Routes of applications belong
 # to the application charts. Every item takes `spec` (the HTTPRoute spec as in the Gateway API; `parentRefs` defaults
 # to this Gateway) and optionally `labels`, `annotations` and `namespace`
