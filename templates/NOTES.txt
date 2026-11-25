@@ -1,4 +1,9 @@
-Gateway API objects of release "{{ .Release.Name }}" were rendered into namespace "{{ .Release.Namespace }}".
+Gateway "{{ include "gateway.gatewayName" . }}" (class "{{ include "gateway.gatewayClassName" . }}") was rendered into namespace "{{ .Release.Namespace }}".
 
-Check them with:
-  kubectl get gatewayclass,gateway,httproute,grpcroute -A -l app.kubernetes.io/instance={{ .Release.Name }}
+Check it with:
+  kubectl -n {{ .Release.Namespace }} get gateway,httproute
+{{- if .Values.httpsRedirect.enabled }}
+
+Applications attach their own HTTPRoute with parentRefs to this Gateway (sectionName "https" for the https listener);
+requests on the "{{ .Values.httpsRedirect.listener }}" listener are redirected to https.
+{{- end }}

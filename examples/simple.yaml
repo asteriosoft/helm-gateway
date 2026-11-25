@@ -1,24 +1,9 @@
-# One Gateway on an already existing GatewayClass and one route behind it.
-gateways:
-  public:
-    spec:
-      gatewayClassName: my-gateway-class
-      listeners:
-        - name: http
-          port: 80
-          protocol: HTTP
-          allowedRoutes:
-            namespaces:
-              from: All
+# A Gateway on a GatewayClass that already exists (nothing else is created).
+gatewayClass:
+  create: false
 
-routes:
-  app:
-    spec:
-      parentRefs:
-        - name: public
-      hostnames:
-        - app.example.com
-      rules:
-        - backendRefs:
-            - name: app
-              port: 80
+gateway:
+  className: my-gateway-class
+  listeners:
+    - name: http
+      port: 80
