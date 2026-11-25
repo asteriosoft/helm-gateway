@@ -42,3 +42,60 @@ gateways: {}
   #     infrastructure:
   #       annotations:
   #         service.beta.kubernetes.io/aws-load-balancer-type: external
+
+# -- Default `spec.parentRefs` of the routes that do not set their own, usually a reference to a Gateway
+defaultParentRefs: []
+  # - name: public
+  #   namespace: gateway-system
+  #   sectionName: https
+
+# -- Routes, keyed by name. Every item takes `spec` (the route spec exactly as in the Gateway API), and optionally
+# `kind` (default `HTTPRoute`, also `GRPCRoute`, `TLSRoute`, `TCPRoute`, `UDPRoute`), `apiVersion` (default
+# `gateway.networking.k8s.io/v1`; experimental kinds use `v1alpha2`), `enabled` (default true), `name` (default: the key),
+# `namespace`, `labels` and `annotations`. Strings in `spec` are rendered with `tpl`.
+routes: {}
+  # https-redirect:
+  #   spec:
+  #     parentRefs:
+  #       - name: public
+  #         sectionName: http
+  #     rules:
+  #       - filters:
+  #           - type: RequestRedirect
+  #             requestRedirect:
+  #               scheme: https
+  #               statusCode: 308
+  # app:
+  #   spec:
+  #     hostnames: ["app.example.com"]
+  #     rules:
+  #       - backendRefs:
+  #           - name: app
+  #             port: 80
+
+# -- Any other namespaced custom resource, keyed by name: implementation specific objects such as an Envoy Gateway
+# EnvoyProxy, ClientTrafficPolicy, BackendTrafficPolicy or SecurityPolicy, or a ReferenceGrant. Every item needs
+# `apiVersion`, `kind` and takes `spec`, and optionally `enabled`, `name`, `namespace`, `labels` and `annotations`.
+# Strings in `spec` are rendered with `tpl`.
+objects: {}
+  # backend-timeout:
+  #   apiVersion: gateway.envoyproxy.io/v1alpha1
+  #   kind: BackendTrafficPolicy
+  #   spec:
+  #     targetRefs:
+  #       - group: gateway.networking.k8s.io
+  #         kind: Gateway
+  #         name: public
+  #     timeout:
+  #       http:
+  #         requestTimeout: 60s
+
+# -- Free-form manifests, as strings or maps, rendered with `tpl`. For anything the sections above cannot express
+extraObjects: []
+  # - |
+  #   apiVersion: v1
+  #   kind: ConfigMap
+  #   metadata:
+  #     name: {{ .Release.Name }}-extra
+  #   data:
+  #     key: value

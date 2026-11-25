@@ -1,0 +1,4 @@
+Gateway API objects of release "{{ .Release.Name }}" were rendered into namespace "{{ .Release.Namespace }}".
+
+Check them with:
+  kubectl get gatewayclass,gateway,httproute,grpcroute -A -l app.kubernetes.io/instance={{ .Release.Name }}

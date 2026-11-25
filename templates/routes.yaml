@@ -1,0 +1,16 @@
+{{- range $name, $item := .Values.routes }}
+{{- $item = $item | default dict }}
+{{- if include "gateway.enabled" $item }}
+---
+apiVersion: {{ $item.apiVersion | default "gateway.networking.k8s.io/v1" }}
+kind: {{ $item.kind | default "HTTPRoute" }}
+metadata:
+  {{- include "gateway.metadata" (dict "ctx" $ "name" $name "item" $item) | nindent 2 }}
+spec:
+  {{- $spec := deepCopy ($item.spec | default dict) }}
+  {{- if and (not (hasKey $spec "parentRefs")) $.Values.defaultParentRefs }}
+  {{- $_ := set $spec "parentRefs" $.Values.defaultParentRefs }}
+  {{- end }}
+  {{- tpl (toYaml $spec) $ | nindent 2 }}
+{{- end }}
+{{- end }}
