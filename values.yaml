@@ -8,89 +8,68 @@ commonLabels: {}
 commonAnnotations: {}
 
 gatewayClass:
-  # -- Create a GatewayClass
-  create: false
-  # -- GatewayClass name (defaults to the release name). Also the default `spec.gatewayClassName` of the gateways below
+  # -- Create a GatewayClass. Set to false to use a class that already exists (see `gateway.className`)
+  create: true
+  # -- GatewayClass name (defaults to the release name)
   name: ""
-  # -- Controller that implements the class, e.g. `gateway.envoyproxy.io/gatewayclass-controller` (required when `create` is true)
-  controllerName: ""
+  # -- Controller that implements the class (default: Envoy Gateway)
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
   # -- GatewayClass description
   description: ""
-  # -- Reference to implementation specific configuration (group, kind, name, namespace), e.g. an Envoy Gateway EnvoyProxy
+  # -- Reference to implementation specific configuration (group, kind, name, namespace). Set automatically to the
+  # EnvoyProxy of this chart when `envoy.enabled` is true
   parametersRef: {}
   # -- Extra labels of the GatewayClass
   labels: {}
   # -- Extra annotations of the GatewayClass
   annotations: {}
 
-# -- Gateways, keyed by name. A map (not a list) so values files of different environments can be merged.
-# Every item takes `spec` (the Gateway spec exactly as in the Gateway API), and optionally `enabled` (default true),
-# `name` (default: the key), `namespace`, `labels`, `annotations` and `apiVersion`.
-# `spec.gatewayClassName` defaults to `gatewayClass.name` (or the release name when `gatewayClass.create` is true).
-# Strings in `spec` are rendered with `tpl`, so `{{ .Release.Name }}` and other chart values can be used.
-gateways: {}
-  # public:
-  #   annotations: {}
-  #   spec:
-  #     listeners:
-  #       - name: http
-  #         port: 80
-  #         protocol: HTTP
-  #         allowedRoutes:
-  #           namespaces:
-  #             from: All
-  #     infrastructure:
-  #       annotations:
-  #         service.beta.kubernetes.io/aws-load-balancer-type: external
+gateway:
+  # -- Gateway name (defaults to the release name)
+  name: ""
+  # -- GatewayClass of the Gateway (defaults to the class created by this chart)
+  className: ""
+  # -- Listeners. `protocol` defaults to HTTP and `allowedRoutes` to routes from all namespaces. Optional per listener:
+  # `hostname`, `tls`, `allowedRoutes`. TLS is usually terminated by the load balancer in front, so both listeners
+  # speak plain HTTP inside the cluster
+  listeners:
+    - name: http
+      port: 80
+    - name: https
+      port: 443
+  # -- `spec.infrastructure` of the Gateway (labels, annotations, parametersRef), needs Gateway API 1.1 or newer
+  infrastructure: {}
+  # -- `spec.addresses` of the Gateway
+  addresses: []
+  # -- Extra labels of the Gateway
+  labels: {}
+  # -- Extra annotations of the Gateway
+  annotations: {}
 
-# -- Default `spec.parentRefs` of the routes that do not set their own, usually a reference to a Gateway
-defaultParentRefs: []
-  # - name: public
-  #   namespace: gateway-system
-  #   sectionName: https
+httpsRedirect:
+  # -- Redirect every request that arrives on the plain-http listener to https (one HTTPRoute for all hosts)
+  enabled: false
+  # -- Name of the plain-http listener the redirect route attaches to
+  listener: http
+  # -- Port of the https redirect target (omit to use the default https port)
+  port: 443
+  # -- Redirect status code
+  statusCode: 308
 
-# -- Routes, keyed by name. Every item takes `spec` (the route spec exactly as in the Gateway API), and optionally
-# `kind` (default `HTTPRoute`, also `GRPCRoute`, `TLSRoute`, `TCPRoute`, `UDPRoute`), `apiVersion` (default
-# `gateway.networking.k8s.io/v1`; experimental kinds use `v1alpha2`), `enabled` (default true), `name` (default: the key),
-# `namespace`, `labels` and `annotations`. Strings in `spec` are rendered with `tpl`.
+# -- Extra HTTPRoutes of the platform (for example a maintenance page), keyed by name. Routes of applications belong
+# to the application charts. Every item takes `spec` (the HTTPRoute spec as in the Gateway API; `parentRefs` defaults
+# to this Gateway) and optionally `labels`, `annotations` and `namespace`
 routes: {}
-  # https-redirect:
+  # maintenance:
   #   spec:
-  #     parentRefs:
-  #       - name: public
-  #         sectionName: http
-  #     rules:
-  #       - filters:
-  #           - type: RequestRedirect
-  #             requestRedirect:
-  #               scheme: https
-  #               statusCode: 308
-  # app:
-  #   spec:
-  #     hostnames: ["app.example.com"]
+  #     hostnames: ["maintenance.example.com"]
   #     rules:
   #       - backendRefs:
-  #           - name: app
+  #           - name: maintenance-page
   #             port: 80
 
-# -- Any other namespaced custom resource, keyed by name: implementation specific objects such as an Envoy Gateway
-# EnvoyProxy, ClientTrafficPolicy, BackendTrafficPolicy or SecurityPolicy, or a ReferenceGrant. Every item needs
-# `apiVersion`, `kind` and takes `spec`, and optionally `enabled`, `name`, `namespace`, `labels` and `annotations`.
-# Strings in `spec` are rendered with `tpl`.
-objects: {}
-  # backend-timeout:
-  #   apiVersion: gateway.envoyproxy.io/v1alpha1
-  #   kind: BackendTrafficPolicy
-  #   spec:
-  #     targetRefs:
-  #       - group: gateway.networking.k8s.io
-  #         kind: Gateway
-  #         name: public
-  #     timeout:
-  #       http:
-  #         requestTimeout: 60s
-
-# -- Free-form manifests, as strings or maps, rendered with `tpl`. For anything the sections above cannot express
+# -- Free-form manifests, as strings or maps, rendered with `tpl`. For anything the options above cannot express
+# (for example an Envoy Gateway SecurityPolicy)
 extraObjects: []
   # - |
   #   apiVersion: v1

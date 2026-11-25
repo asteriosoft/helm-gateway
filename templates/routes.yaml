@@ -1,16 +1,36 @@
-{{- range $name, $item := .Values.routes }}
-{{- $item = $item | default dict }}
-{{- if include "gateway.enabled" $item }}
+{{- $gateway := include "gateway.gatewayName" . }}
+{{- if .Values.httpsRedirect.enabled }}
 ---
-apiVersion: {{ $item.apiVersion | default "gateway.networking.k8s.io/v1" }}
-kind: {{ $item.kind | default "HTTPRoute" }}
+# One redirect for every host served by the plain-http listener of the Gateway
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
 metadata:
-  {{- include "gateway.metadata" (dict "ctx" $ "name" $name "item" $item) | nindent 2 }}
+  {{- include "gateway.metadata" (dict "ctx" $ "name" (printf "%s-https-redirect" $gateway) "item" (dict)) | nindent 2 }}
 spec:
-  {{- $spec := deepCopy ($item.spec | default dict) }}
-  {{- if and (not (hasKey $spec "parentRefs")) $.Values.defaultParentRefs }}
-  {{- $_ := set $spec "parentRefs" $.Values.defaultParentRefs }}
-  {{- end }}
-  {{- tpl (toYaml $spec) $ | nindent 2 }}
+  parentRefs:
+    - name: {{ $gateway }}
+      sectionName: {{ .Values.httpsRedirect.listener }}
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            {{- with .Values.httpsRedirect.port }}
+            port: {{ . }}
+            {{- end }}
+            statusCode: {{ .Values.httpsRedirect.statusCode }}
 {{- end }}
+{{- range $name, $route := .Values.routes }}
+{{- $route = $route | default dict }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  {{- include "gateway.metadata" (dict "ctx" $ "name" $name "item" $route) | nindent 2 }}
+spec:
+  {{- $spec := deepCopy ($route.spec | default dict) }}
+  {{- if not (hasKey $spec "parentRefs") }}
+  {{- $_ := set $spec "parentRefs" (list (dict "name" $gateway)) }}
+  {{- end }}
+  {{- toYaml $spec | nindent 2 }}
 {{- end }}

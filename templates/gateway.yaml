@@ -1,0 +1,30 @@
+{{- $listeners := required "gateway.listeners must not be empty" .Values.gateway.listeners }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  {{- include "gateway.metadata" (dict "ctx" $ "name" (include "gateway.gatewayName" $) "item" .Values.gateway) | nindent 2 }}
+spec:
+  gatewayClassName: {{ include "gateway.gatewayClassName" . }}
+  listeners:
+    {{- range $listeners }}
+    - name: {{ required "every gateway listener needs a name" .name }}
+      port: {{ required (printf "gateway listener %s needs a port" .name) .port }}
+      protocol: {{ .protocol | default "HTTP" }}
+      {{- with .hostname }}
+      hostname: {{ . | quote }}
+      {{- end }}
+      allowedRoutes:
+        {{- toYaml (.allowedRoutes | default (dict "namespaces" (dict "from" "All"))) | nindent 8 }}
+      {{- with .tls }}
+      tls:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- end }}
+  {{- with .Values.gateway.addresses }}
+  addresses:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.gateway.infrastructure }}
+  infrastructure:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
