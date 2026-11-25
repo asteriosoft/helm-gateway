@@ -1,0 +1,15 @@
+{{- if .Values.gatewayClass.create }}
+apiVersion: {{ .Values.gatewayClass.apiVersion | default "gateway.networking.k8s.io/v1" }}
+kind: GatewayClass
+metadata:
+  {{- include "gateway.metadata" (dict "ctx" $ "name" (include "gateway.className" $) "item" .Values.gatewayClass) | nindent 2 }}
+spec:
+  controllerName: {{ required "gatewayClass.controllerName is required when gatewayClass.create is true" .Values.gatewayClass.controllerName }}
+  {{- with .Values.gatewayClass.description }}
+  description: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.gatewayClass.parametersRef }}
+  parametersRef:
+    {{- tpl (toYaml .) $ | nindent 4 }}
+  {{- end }}
+{{- end }}

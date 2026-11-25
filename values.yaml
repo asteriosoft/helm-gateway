@@ -1,0 +1,44 @@
+# -- Override the chart name used in the `app.kubernetes.io/name` label
+nameOverride: ""
+
+# -- Labels added to every rendered object
+commonLabels: {}
+
+# -- Annotations added to every rendered object
+commonAnnotations: {}
+
+gatewayClass:
+  # -- Create a GatewayClass
+  create: false
+  # -- GatewayClass name (defaults to the release name). Also the default `spec.gatewayClassName` of the gateways below
+  name: ""
+  # -- Controller that implements the class, e.g. `gateway.envoyproxy.io/gatewayclass-controller` (required when `create` is true)
+  controllerName: ""
+  # -- GatewayClass description
+  description: ""
+  # -- Reference to implementation specific configuration (group, kind, name, namespace), e.g. an Envoy Gateway EnvoyProxy
+  parametersRef: {}
+  # -- Extra labels of the GatewayClass
+  labels: {}
+  # -- Extra annotations of the GatewayClass
+  annotations: {}
+
+# -- Gateways, keyed by name. A map (not a list) so values files of different environments can be merged.
+# Every item takes `spec` (the Gateway spec exactly as in the Gateway API), and optionally `enabled` (default true),
+# `name` (default: the key), `namespace`, `labels`, `annotations` and `apiVersion`.
+# `spec.gatewayClassName` defaults to `gatewayClass.name` (or the release name when `gatewayClass.create` is true).
+# Strings in `spec` are rendered with `tpl`, so `{{ .Release.Name }}` and other chart values can be used.
+gateways: {}
+  # public:
+  #   annotations: {}
+  #   spec:
+  #     listeners:
+  #       - name: http
+  #         port: 80
+  #         protocol: HTTP
+  #         allowedRoutes:
+  #           namespaces:
+  #             from: All
+  #     infrastructure:
+  #       annotations:
+  #         service.beta.kubernetes.io/aws-load-balancer-type: external

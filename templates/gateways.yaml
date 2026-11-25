@@ -1,0 +1,21 @@
+{{- $className := "" }}
+{{- if or .Values.gatewayClass.create .Values.gatewayClass.name }}
+{{- $className = include "gateway.className" . }}
+{{- end }}
+{{- range $name, $item := .Values.gateways }}
+{{- $item = $item | default dict }}
+{{- if include "gateway.enabled" $item }}
+---
+apiVersion: {{ $item.apiVersion | default "gateway.networking.k8s.io/v1" }}
+kind: Gateway
+metadata:
+  {{- include "gateway.metadata" (dict "ctx" $ "name" $name "item" $item) | nindent 2 }}
+spec:
+  {{- $spec := deepCopy ($item.spec | default dict) }}
+  {{- if not (hasKey $spec "gatewayClassName") }}
+  {{- $_ := set $spec "gatewayClassName" (required (printf "gateways.%s.spec.gatewayClassName or gatewayClass.name must be set" $name) $className) }}
+  {{- end }}
+  {{- $_ := required (printf "gateways.%s.spec.listeners must not be empty" $name) $spec.listeners }}
+  {{- tpl (toYaml $spec) $ | nindent 2 }}
+{{- end }}
+{{- end }}
