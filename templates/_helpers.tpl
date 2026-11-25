@@ -22,7 +22,7 @@ GatewayClass name: gatewayClass.name or the release name.
 
 {{/*
 Renders "true" unless the item is disabled with `enabled: false`.
-Usage: {{ if include "gateway.enabled" $item }}
+Usage: wrap the item in an if that calls include with "gateway.enabled" and the item.
 */}}
 {{- define "gateway.enabled" -}}
 {{- if or (not (hasKey . "enabled")) .enabled -}}true{{- end -}}
@@ -30,7 +30,7 @@ Usage: {{ if include "gateway.enabled" $item }}
 
 {{/*
 Object metadata. Precedence for labels and annotations: item > commonLabels/commonAnnotations > standard labels.
-Usage: {{ include "gateway.metadata" (dict "ctx" $ "name" $name "item" $item) | nindent 2 }}
+Usage: include "gateway.metadata" with a dict of ctx (root context), name (the map key) and item (the map value).
 */}}
 {{- define "gateway.metadata" -}}
 {{- $std := dict "helm.sh/chart" (include "gateway.chart" .ctx) "app.kubernetes.io/name" (include "gateway.name" .ctx) "app.kubernetes.io/instance" .ctx.Release.Name "app.kubernetes.io/managed-by" .ctx.Release.Service -}}
