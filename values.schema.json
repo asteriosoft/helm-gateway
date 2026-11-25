@@ -2,69 +2,289 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "nameOverride": { "type": "string" },
-    "commonLabels": { "type": ["object", "null"] },
-    "commonAnnotations": { "type": ["object", "null"] },
+    "global": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "nameOverride": {
+      "type": "string"
+    },
+    "commonLabels": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "commonAnnotations": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
     "gatewayClass": {
-      "type": "object",
+      "type": [
+        "object",
+        "null"
+      ],
       "properties": {
-        "create": { "type": "boolean" },
-        "name": { "type": "string" },
-        "controllerName": { "type": "string" },
-        "description": { "type": "string" },
-        "parametersRef": { "type": ["object", "null"] },
-        "labels": { "type": ["object", "null"] },
-        "annotations": { "type": ["object", "null"] }
-      }
-    },
-    "gateways": {
-      "type": ["object", "null"],
-      "additionalProperties": {
-        "type": ["object", "null"],
-        "properties": {
-          "enabled": { "type": "boolean" },
-          "name": { "type": "string" },
-          "namespace": { "type": "string" },
-          "apiVersion": { "type": "string" },
-          "labels": { "type": ["object", "null"] },
-          "annotations": { "type": ["object", "null"] },
-          "spec": { "type": ["object", "null"] }
+        "create": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "controllerName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "parametersRef": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "labels": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "annotations": {
+          "type": [
+            "object",
+            "null"
+          ]
         }
-      }
+      },
+      "additionalProperties": false
     },
-    "defaultParentRefs": { "type": ["array", "null"] },
+    "gateway": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "className": {
+          "type": "string"
+        },
+        "listeners": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "port"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "port": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 65535
+              },
+              "protocol": {
+                "type": "string"
+              },
+              "hostname": {
+                "type": "string"
+              },
+              "allowedRoutes": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "tls": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "infrastructure": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "addresses": {
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "labels": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "annotations": {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "httpsRedirect": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "listener": {
+          "type": "string"
+        },
+        "port": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "statusCode": {
+          "type": "integer",
+          "enum": [
+            301,
+            302,
+            303,
+            307,
+            308
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
     "routes": {
-      "type": ["object", "null"],
+      "type": [
+        "object",
+        "null"
+      ],
       "additionalProperties": {
-        "type": ["object", "null"],
+        "type": [
+          "object",
+          "null"
+        ],
         "properties": {
-          "enabled": { "type": "boolean" },
-          "name": { "type": "string" },
-          "namespace": { "type": "string" },
-          "apiVersion": { "type": "string" },
-          "kind": { "type": "string" },
-          "labels": { "type": ["object", "null"] },
-          "annotations": { "type": ["object", "null"] },
-          "spec": { "type": ["object", "null"] }
-        }
+          "spec": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "labels": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "annotations": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "namespace": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
       }
     },
-    "objects": {
-      "type": ["object", "null"],
-      "additionalProperties": {
-        "type": ["object", "null"],
-        "properties": {
-          "enabled": { "type": "boolean" },
-          "name": { "type": "string" },
-          "namespace": { "type": "string" },
-          "apiVersion": { "type": "string" },
-          "kind": { "type": "string" },
-          "labels": { "type": ["object", "null"] },
-          "annotations": { "type": ["object", "null"] },
-          "spec": { "type": ["object", "null"] }
-        }
-      }
+    "extraObjects": {
+      "type": [
+        "array",
+        "null"
+      ]
     },
-    "extraObjects": { "type": ["array", "null"] }
-  }
+    "envoy": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "replicas": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "resources": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "nodeSelector": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "topologySpreadConstraints": {
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "pdb": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "service": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "externalTrafficPolicy": {
+              "type": "string"
+            },
+            "annotations": {
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "requestTimeout": {
+          "type": "string"
+        },
+        "allowUnderscoresInHeaders": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
 }
