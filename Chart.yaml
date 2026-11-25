@@ -1,0 +1,7 @@
+apiVersion: v2
+description: A generic Helm chart for Kubernetes Gateway API resources (GatewayClass, Gateways, Routes and implementation specific objects)
+name: gateway
+type: application
+version: 0.1.0
+maintainers:
+  - name: Asteriosoft DevOps Team

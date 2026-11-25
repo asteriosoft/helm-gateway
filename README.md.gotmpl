@@ -1,0 +1,22 @@
+{{ template "chart.header" . }}
+{{ template "chart.description" . }}
+
+{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
+
+## Installing the Chart
+
+To install the chart with the release name `my-release`:
+
+```console
+$ helm repo add helm-gateway git+https://github.com/asteriosoft/helm-gateway?ref={{ template "chart.version" . }}
+$ helm install my-release helm-gateway/{{ template "chart.name" . }} -f values.yaml
+```
+
+The chart contains no workload. It renders [Gateway API](https://gateway-api.sigs.k8s.io/) objects, so the Gateway API
+CRDs and a Gateway controller (Envoy Gateway, Cilium, Istio, NGINX Gateway Fabric, ...) must already be installed.
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "helm-docs.versionFooter" . }}
