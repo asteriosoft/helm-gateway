@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "nameOverride": { "type": "string" },
+    "commonLabels": { "type": ["object", "null"] },
+    "commonAnnotations": { "type": ["object", "null"] },
+    "gatewayClass": {
+      "type": "object",
+      "properties": {
+        "create": { "type": "boolean" },
+        "name": { "type": "string" },
+        "controllerName": { "type": "string" },
+        "description": { "type": "string" },
+        "parametersRef": { "type": ["object", "null"] },
+        "labels": { "type": ["object", "null"] },
+        "annotations": { "type": ["object", "null"] }
+      }
+    },
+    "gateways": {
+      "type": ["object", "null"],
+      "additionalProperties": {
+        "type": ["object", "null"],
+        "properties": {
+          "enabled": { "type": "boolean" },
+          "name": { "type": "string" },
+          "namespace": { "type": "string" },
+          "apiVersion": { "type": "string" },
+          "labels": { "type": ["object", "null"] },
+          "annotations": { "type": ["object", "null"] },
+          "spec": { "type": ["object", "null"] }
+        }
+      }
+    },
+    "defaultParentRefs": { "type": ["array", "null"] },
+    "routes": {
+      "type": ["object", "null"],
+      "additionalProperties": {
+        "type": ["object", "null"],
+        "properties": {
+          "enabled": { "type": "boolean" },
+          "name": { "type": "string" },
+          "namespace": { "type": "string" },
+          "apiVersion": { "type": "string" },
+          "kind": { "type": "string" },
+          "labels": { "type": ["object", "null"] },
+          "annotations": { "type": ["object", "null"] },
+          "spec": { "type": ["object", "null"] }
+        }
+      }
+    },
+    "objects": {
+      "type": ["object", "null"],
+      "additionalProperties": {
+        "type": ["object", "null"],
+        "properties": {
+          "enabled": { "type": "boolean" },
+          "name": { "type": "string" },
+          "namespace": { "type": "string" },
+          "apiVersion": { "type": "string" },
+          "kind": { "type": "string" },
+          "labels": { "type": ["object", "null"] },
+          "annotations": { "type": ["object", "null"] },
+          "spec": { "type": ["object", "null"] }
+        }
+      }
+    },
+    "extraObjects": { "type": ["array", "null"] }
+  }
+}
