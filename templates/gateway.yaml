@@ -1,4 +1,7 @@
-{{- $listeners := required "gateway.listeners must not be empty" .Values.gateway.listeners }}
+{{- if not .Values.gateway.listeners }}
+{{- fail "gateway.listeners must not be empty" }}
+{{- end }}
+{{- $listeners := .Values.gateway.listeners }}
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
