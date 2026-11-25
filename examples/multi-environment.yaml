@@ -1,0 +1,22 @@
+# Gateways, routes and objects are maps, so values files of different environments merge key by key.
+# Base file (all environments): helm install ... -f base.yaml -f prod.yaml
+#
+# base.yaml
+#   gateways:
+#     public:
+#       spec:
+#         listeners:
+#           - {name: https, port: 443, protocol: HTTP}
+#
+# prod.yaml: adds a second Gateway and disables a route only for prod
+#   gateways:
+#     internal:
+#       spec:
+#         gatewayClassName: internal-class
+#         listeners:
+#           - {name: http, port: 80, protocol: HTTP}
+#   routes:
+#     debug:
+#       enabled: false
+#
+# Note: lists such as `listeners` are replaced as a whole by Helm, only maps are merged.

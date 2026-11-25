@@ -1,0 +1,84 @@
+# Envoy Gateway behind an AWS Network Load Balancer that terminates TLS (created by the AWS Load Balancer Controller).
+# Port 80 only serves the https redirect, port 443 carries the applications (plain HTTP inside the cluster).
+gatewayClass:
+  create: true
+  name: envoy
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: envoy
+    namespace: "{{ .Release.Namespace }}"
+
+objects:
+  envoy:
+    apiVersion: gateway.envoyproxy.io/v1alpha1
+    kind: EnvoyProxy
+    spec:
+      provider:
+        type: Kubernetes
+        kubernetes:
+          envoyDeployment:
+            replicas: 2
+          envoyService:
+            type: LoadBalancer
+            externalTrafficPolicy: Local
+            annotations:
+              service.beta.kubernetes.io/aws-load-balancer-type: external
+              service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: instance
+              service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+              service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
+              service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
+              service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:REGION:ACCOUNT:certificate/ID
+  public-client-traffic:
+    apiVersion: gateway.envoyproxy.io/v1alpha1
+    kind: ClientTrafficPolicy
+    spec:
+      targetRefs:
+        - group: gateway.networking.k8s.io
+          kind: Gateway
+          name: public
+      headers:
+        withUnderscoresAction: Allow
+  public-backend-traffic:
+    apiVersion: gateway.envoyproxy.io/v1alpha1
+    kind: BackendTrafficPolicy
+    spec:
+      targetRefs:
+        - group: gateway.networking.k8s.io
+          kind: Gateway
+          name: public
+      timeout:
+        http:
+          requestTimeout: 60s
+
+gateways:
+  public:
+    spec:
+      listeners:
+        - name: http
+          port: 80
+          protocol: HTTP
+          allowedRoutes:
+            namespaces:
+              from: All
+        - name: https
+          port: 443
+          protocol: HTTP
+          allowedRoutes:
+            namespaces:
+              from: All
+
+routes:
+  https-redirect:
+    spec:
+      parentRefs:
+        - name: public
+          sectionName: http
+      rules:
+        - filters:
+            - type: RequestRedirect
+              requestRedirect:
+                scheme: https
+                port: 443
+                statusCode: 308
